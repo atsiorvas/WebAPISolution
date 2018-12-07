@@ -140,7 +140,7 @@ namespace UserService.Controllers {
             var createUserCommand = new
                 CreateCommand<UserModel>(userModel);
 
-            var user = await _mediator.Send(userModel, new CancellationToken());
+            var user = await _mediator.Send(createUserCommand, new CancellationToken());
 
             if (user == null) {
                 return BadRequest(new { msg = "cannot add record" });

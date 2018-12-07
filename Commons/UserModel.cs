@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Common {
 
     [Serializable]
-    public class UserModel : DTO, IRequest<UserModel> {
+    public class UserModel : DTO {
 
         [JsonProperty("email")]
         public string Email { get; set; }

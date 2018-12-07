@@ -65,9 +65,11 @@ namespace UserService {
             builder.Register(c => {
                 var confg = new MapperConfiguration(mc => {
                     //add your profiles (either resolve from container or however else you acquire them)
-                    foreach (var profile in c.Resolve<IEnumerable<Profile>>()) {
-                        mc.AddProfile(profile);
-                    }
+                    //foreach (var profile in c.Resolve<IEnumerable<Profile>>()) {
+                    //    mc.AddProfile(profile);
+                    //}
+                    mc.AddProfile(new UserMapper());
+                    mc.AddProfile(new NotesMapper());
                 });
                 confg.AssertConfigurationIsValid();
                 return confg;
