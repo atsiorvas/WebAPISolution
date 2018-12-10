@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Repository;
 using System.Reactive.Subjects;
+using System.Linq.Expressions;
+using AutoMapper;
 
 namespace Service {
     public class UserAppService : IUserAppService {
@@ -12,14 +14,19 @@ namespace Service {
         private readonly IUserRepository _userRepository;
         private readonly IMediator _mediator;
         private readonly UnitOfWork _unitOfWork;
+        private const bool Eager = true;
+        private readonly IConfigurationProvider _cfg;
+        private readonly IMapper _mapper;
 
         public UserAppService(IUserRepository userRepository,
             IMediator mediator,
-            UnitOfWork unitOfWork) {
+            UnitOfWork unitOfWork,
+            IMapper mapper) {
             _userRepository = userRepository
                 ?? throw new ArgumentNullException("userRepository");
             _mediator = mediator ?? throw new ArgumentNullException("mediator");
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException("unitOfWork");
+            _mapper = mapper ?? throw new ArgumentNullException("mapper");
         }
 
         public async Task<UserModel> RegisterAsync(UserModel userRegister) {
@@ -55,18 +62,22 @@ namespace Service {
         }
 
         public async Task<UserModel> GetUserAsync(string email) {
-
             UserModel user = await _userRepository.GetUserAsync(email);
-
             return user;
         }
 
         public async Task<UserModel> GetUserWithNotesAsync(string email) {
-            UserModel user = await _userRepository.GetUserWithNotesAsync(email);
-            return user;
+            var user = await _unitOfWork
+                .UserRepository.GetAsync(true, filter: u => u.Email == email);
+            return _mapper.Map<UserModel>(user);
         }
-        public async Task<bool> RemoveUserAsync(string email) {
-            return await _userRepository.DeleteUserAsync(email);
+        public async Task<bool> RemoveUserAsync(int id) {
+            return await _unitOfWork.UserRepository.Delete(id);
+        }
+
+        public async Task<int> FindIdByBkAsync(string bk) {
+            return await _unitOfWork.UserRepository
+                .FindIdByBkAsync(filter: u => u.Email == (string)bk);
         }
     }
 }

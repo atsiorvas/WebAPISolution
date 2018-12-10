@@ -5,9 +5,12 @@ using Common.Commands;
 using Common.Interface;
 using Mapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Repository;
 using Service;
 using System.Collections.Generic;
+using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 using Module = Autofac.Module;
 
 namespace UserService {
@@ -57,6 +60,14 @@ namespace UserService {
                 .As<IRequestHandler<CreateCommand<UserModel>, UserModel>>()
                 .InstancePerLifetimeScope();
 
+            builder.RegisterType<GetAsyncHandler<UserModel>>()
+                .As<IRequestHandler<GetCommandAsync<UserModel>, UserModel>>()
+                .InstancePerLifetimeScope();
+
+            builder.RegisterType<DeleteAsyncHandler<UserModel>>()
+               .As<IRequestHandler<DeleteAsyncCommand<UserModel>, bool>>()
+               .InstancePerLifetimeScope();
+
             //register your profiles, or skip this if you don't want them in your container
             builder.RegisterAssemblyTypes().AssignableTo(typeof(UserMapper)).As<Profile>();
             builder.RegisterAssemblyTypes().AssignableTo(typeof(NotesMapper)).As<Profile>();
@@ -81,6 +92,17 @@ namespace UserService {
             builder.Register(c => c.Resolve<MapperConfiguration>()
             .CreateMapper(c.Resolve)).As<IMapper>().InstancePerLifetimeScope();
 
+            builder.Register(c => {
+                var config = c.Resolve<IConfiguration>();
+
+                var opt = new DbContextOptionsBuilder<UserContext>();
+                opt.UseSqlServer(config.GetSection("ConnectionDB").Value);
+
+                return new UserContext(opt.Options);
+            }).AsSelf().InstancePerLifetimeScope();
+
+            //call main class load
+            base.Load(builder);
         }
     }
 }

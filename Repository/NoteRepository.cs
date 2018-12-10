@@ -41,7 +41,7 @@ namespace Repository {
                 newNotes.ForEach(note =>
                      newNotesToMap.Add(_mapper.Map<NotesModel, Notes>(note)));
 
-                user.Note.AddRange(newNotesToMap);
+                user.Note.UnionWith(newNotesToMap);
 
                 users.Update(user);
                 await _context.SaveChangesAsync();

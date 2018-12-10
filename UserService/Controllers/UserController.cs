@@ -175,11 +175,12 @@ namespace UserService.Controllers {
                 }
                 DbSet<User> users = _context.User;
                 DbSet<Notes> notes = _context.Notes;
-                //IEnumerable<Notes> query =
-                //     from notes in _context.Notes
-                //     join user in _context.User on notes.UserId equals user.UserId
+
+                //var query =
+                //     from note in _context.Notes.AsParallel()
+                //     join user in _context.User.AsParallel() on note.UserId equals user.Id
                 //     where user.Email == email
-                //     select notes;
+                //     select notes.ToList();
 
                 //IEnumerable<NotesModel> query =
                 //    notes
@@ -232,8 +233,8 @@ namespace UserService.Controllers {
                 //subscription.Dispose();
 
                 IEnumerable<Notes> notesList = _unitOfWork.NoteRepository
-                    .Get(filter: q => q.user.Email == email,
-                    orderBy: q => q.OrderBy(n => n.NoteId));
+                    .Get(filter: q => q.User.Email == email,
+                    orderBy: q => q.OrderBy(n => n.Id));
 
                 bool exist = await _unitOfWork.UserRepository
                     .IsExistsAsync(filter: q => q.Email == email);
@@ -263,14 +264,14 @@ namespace UserService.Controllers {
             [FromQuery(Name = "email")]string email) {
 
             var requestCreateGetUserCommand = new
-                GetUserCommandAsync(email);
+                GetCommandAsync<UserModel>(email);
 
             var user = await _mediator.Send(requestCreateGetUserCommand);
 
             if (user == null) {
                 return NotFound();
             }
-            return user;
+            return Ok(user);
         }
 
         [Route("deleteUser")]
@@ -279,7 +280,7 @@ namespace UserService.Controllers {
             [FromQuery(Name = "email")]string email) {
 
             var requestDeleteUserCommand = new
-                DeleteUserAsyncCommand(email);
+                DeleteAsyncCommand<UserModel>(email);
 
             return await _mediator.Send(requestDeleteUserCommand);
         }

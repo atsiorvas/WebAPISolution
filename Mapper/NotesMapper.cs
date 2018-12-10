@@ -19,7 +19,7 @@ namespace Mapper {
             .ForMember(dest => dest.Text, src => src.MapFrom<string>(srcNote => srcNote.Text))
             .ForMember(dest => dest.Lang, opt => opt.MapFrom<int>(src => src.Lang))
             .ReverseMap()
-            .ForMember(dest => dest.NoteId, src => src.Ignore())
+            .ForMember(dest => dest.Id, src => src.Ignore())
             .ForMember(dest => dest.Text, src => src.MapFrom<string>(srcNote => srcNote.Text))
             .ForMember(dest => dest.Lang, opt => opt.MapFrom<int>(src => src.Lang));
 
@@ -31,7 +31,7 @@ namespace Mapper {
     public class NoteToLongConverter : ITypeConverter<Notes, long> {
 
         public long Convert(Notes source, long destination, ResolutionContext context) {
-            var noteId = source.NoteId;
+            var noteId = source.Id;
             return System.Convert.ToInt64(noteId);
         }
     }

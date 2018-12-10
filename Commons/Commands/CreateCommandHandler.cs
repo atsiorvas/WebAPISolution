@@ -1,15 +1,13 @@
 ﻿using AutoMapper;
-using Common;
 using Common.Commands;
 using Common.Interface;
 using MediatR;
-using Repository;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 
-namespace UserService {
+namespace Common {
     public class CreateCommandHandler<TDto>
        : IRequestHandler<CreateCommand<TDto>, TDto>
 

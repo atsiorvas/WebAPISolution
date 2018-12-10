@@ -4,12 +4,14 @@ using Common.Interface;
 using MediatR;
 
 namespace Common.Commands {
-    public class DeleteUserAsyncHandler
-        : IRequestHandler<DeleteUserAsyncCommand, bool> {
+    public class DeleteAsyncHandler<TDto>
+        : IRequestHandler<DeleteAsyncCommand<TDto>, bool>
+
+        where TDto : DTO, new() {
 
         private readonly IUserAppService _userAppService;
 
-        public DeleteUserAsyncHandler(IUserAppService userAppService) {
+        public DeleteAsyncHandler(IUserAppService userAppService) {
             _userAppService = userAppService;
         }
 
@@ -20,13 +22,11 @@ namespace Common.Commands {
         /// <param name="command"></param>
         /// <param name="command"></param>
         /// <returns name="UserModel"></returns>
-        /// 
-        public Task<bool> Handle(DeleteUserAsyncCommand request, CancellationToken cancellationToken) {
-            throw new System.NotImplementedException();
-            //if (request != null && !string.IsNullOrEmpty(request.Email)) {
-            //    return await _userAppService.RemoveUserAsync(request.Email);
-            //}
-            //return false;
+
+        public async Task<bool> Handle(DeleteAsyncCommand<TDto> request,
+            CancellationToken cancellationToken) {
+            int id = await _userAppService.FindIdByBkAsync((string)request.Bk);
+            return await _userAppService.RemoveUserAsync(id);
         }
     }
 

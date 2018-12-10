@@ -1,9 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using AutoMapper;
 using Common;
 using FluentValidation.AspNetCore;
-using Mapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +11,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Repository;
 using System;
-using System.Reflection;
 
 namespace UserService {
     public class Startup {
@@ -57,8 +54,8 @@ namespace UserService {
                 //checks.AddSqlCheck("UsersContext", _configuration["ConnectionDB"]);
             });
 
-            services.AddDbContext<UserContext>(options =>
-                options.UseSqlServer(_configuration["ConnectionDB"]));
+            //services.AddDbContext<UserContext>(options =>
+            //   options.UseSqlServer(_configuration["ConnectionDB"]));
 
             //services.AddMediatR(Assembly.GetAssembly(typeof(GetUserAsyncCommand)));
             //services.AddMediatR(Assembly.GetAssembly(typeof(CreateCommand<UserModel>)));

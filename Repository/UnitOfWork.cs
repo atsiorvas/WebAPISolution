@@ -9,16 +9,23 @@ namespace Repository {
         private readonly UserContext context;
         private GenericRepository<User> userRepository;
         private GenericRepository<Notes> noteRepository;
-        private IMapper mapper;
+        private readonly IMapper mapper;
 
         public UnitOfWork(UserContext context, IMapper mapper) {
             this.context = context;
             this.mapper = mapper;
         }
+
+        ~UnitOfWork() {
+            // Finalizer calls Dispose(true)
+            Dispose(true);
+        }
+
         public GenericRepository<User> UserRepository {
             get {
                 if (this.userRepository == null) {
-                    this.userRepository = new GenericRepository<User>(context, mapper);
+                    this.userRepository =
+                        new GenericRepository<User>(context, mapper);
                 }
                 return userRepository;
             }
@@ -27,7 +34,8 @@ namespace Repository {
         public GenericRepository<Notes> NoteRepository {
             get {
                 if (this.noteRepository == null) {
-                    this.noteRepository = new GenericRepository<Notes>(context, mapper);
+                    this.noteRepository =
+                        new GenericRepository<Notes>(context, mapper);
                 }
                 return noteRepository;
             }

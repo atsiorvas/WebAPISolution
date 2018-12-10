@@ -4,11 +4,12 @@ using Common.Interface;
 using MediatR;
 
 namespace Common.Commands {
-    public class GetUserAsyncHandler
-        : IRequestHandler<GetUserCommandAsync, UserModel> {
+    public class GetAsyncHandler<TDto>
+        : IRequestHandler<GetCommandAsync<TDto>, UserModel>
+        where TDto : DTO, new() {
 
         private readonly IUserAppService _userAppService;
-        public GetUserAsyncHandler(IUserAppService userAppService) {
+        public GetAsyncHandler(IUserAppService userAppService) {
             _userAppService = userAppService;
         }
 
@@ -19,12 +20,11 @@ namespace Common.Commands {
         /// <param name="command"></param>
         /// <param name="command"></param>
         /// <returns name="UserModel"></returns>
-        public async Task<UserModel> Handle(GetUserCommandAsync request,
+
+        public async Task<UserModel> Handle(GetCommandAsync<TDto> request,
             CancellationToken cancellationToken) {
-            if (request != null && !string.IsNullOrEmpty(request.Email)) {
-                return await _userAppService.GetUserWithNotesAsync(request.Email);
-            }
-            return null;
+            return await _userAppService
+                .GetUserWithNotesAsync((string)request.Bk);
         }
     }
 }

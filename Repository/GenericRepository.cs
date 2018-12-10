@@ -53,7 +53,7 @@ namespace Repository {
             }
         }
 
-        public virtual TEntity Get(bool eager = false,
+        public virtual async Task<TEntity> GetAsync(bool eager = false,
            Expression<Func<TEntity, bool>> filter = null) {
             IQueryable<TEntity> query = _dbSet;
 
@@ -65,7 +65,7 @@ namespace Repository {
                         query = query.Include(property.Name);
                     }
                 }
-                return query.Where(filter).FirstOrDefault();
+                return await query.Where(filter).FirstOrDefaultAsync();
             }
 
             return null;
@@ -80,16 +80,26 @@ namespace Repository {
             _dbSet.Add(entity);
         }
 
-        public virtual void Delete(object id) {
+        public virtual async Task<bool> Delete(object id) {
             TEntity entityToDelete = _dbSet.Find(id);
-            Delete(entityToDelete);
+            return await DeleteAsync(entityToDelete);
         }
 
-        public virtual void Delete(TEntity entityToDelete) {
-            if (_context.Entry(entityToDelete).State == EntityState.Detached) {
-                _dbSet.Attach(entityToDelete);
+        public virtual async Task<bool>
+            DeleteAsync(TEntity entityToDelete) {
+            try {
+                if (
+                    _context.Entry(entityToDelete).State
+                    == EntityState.Detached
+                    ) {
+                    _dbSet.Attach(entityToDelete);
+                }
+                _dbSet.Remove(entityToDelete);
+                await _context.SaveChangesAsync();
+                return true;
+            } catch (Exception ex) {
+                return false;
             }
-            _dbSet.Remove(entityToDelete);
         }
 
         public virtual async Task UpdateAsync(TEntity entityToUpdate) {
@@ -97,7 +107,6 @@ namespace Repository {
             _context.Entry(entityToUpdate).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
-
 
         public async Task<TEntity> SaveAsync(TEntity model) {
             try {
@@ -114,5 +123,23 @@ namespace Repository {
                 throw ex;
             }
         }
+
+        public async Task<int> FindIdByBkAsync(
+            Expression<Func<TEntity, bool>> filter = null) {
+
+            IQueryable<TEntity> query = _dbSet;
+
+            TEntity entity = await query
+                .Where(filter).FirstOrDefaultAsync();
+
+            if (entity != null) {
+                return entity.Id;
+            }
+            return 0;
+        }
+
+        public static bool IsItNew(DbContext context,
+            object entity)
+            => !context.Entry(entity).IsKeySet;
     }
 }

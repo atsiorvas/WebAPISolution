@@ -8,10 +8,10 @@ namespace Repository {
         public void Configure(EntityTypeBuilder<Notes> builder) {
             //NoteId
             builder
-                .HasKey(x => x.NoteId);
+                .HasKey(x => x.Id);
 
             builder
-                .Property(x => x.NoteId)
+                .Property(x => x.Id)
                 .ValueGeneratedOnAdd();
 
             //Text
@@ -28,7 +28,7 @@ namespace Repository {
 
             //RelationShip
             builder
-                .HasOne(n => n.user)
+                .HasOne(n => n.User)
                 .WithMany(x => x.Note)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);

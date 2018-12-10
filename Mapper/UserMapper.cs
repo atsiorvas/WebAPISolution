@@ -29,7 +29,7 @@ namespace Mapper {
             .ForMember(dest => dest.Note, src =>
                 src.MapFrom(srcUser => srcUser.Note))
             .ForMember(dest => dest.IsAdmin, src => src.Ignore())
-            .ForMember(dest => dest.UserId, src => src.Ignore());
+            .ForMember(dest => dest.Id, src => src.Ignore());
         }
     }
 }

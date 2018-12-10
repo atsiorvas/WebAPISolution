@@ -4,42 +4,45 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Common {
 
-    [Table("User")]
+    [Table("user")]
     public class User : Entity {
         [Key]
         [Required]
-        [Column("Id")]
-        public override int UserId { get; protected set; }
+        [Column("user_id")]
+        public override int Id { get; protected set; }
 
-        [Column("FirstName")]
+        [Column("first_name")]
         [StringLength(100)]
         public string FirstName { get; set; }
 
-        [Column("LastName")]
+        [Column("last_name")]
         [StringLength(100)]
         public string LastName { get; set; }
 
         [Required]
         [StringLength(100)]
         [DataType(DataType.Password)]
+        [Column("password")]
         public string Password { get; set; }
 
-        [Column("Email")]
+        [Column("email")]
         [Required]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
-        [Column("RememberMe")]
+        [Column("remember_me")]
         public bool RememberMe { get; set; } = false;
 
+        [Column("is_admin")]
         public bool IsAdmin { get; set; }
 
-        [Column("ResetAnswer")]
+        [Column("reset_answer")]
         [Required]
         [DataType(DataType.Text)]
         public string ResetAnswer { get; set; }
 
-        public virtual List<Notes> Note { get; set; }
+        [Column("notes")]
+        public virtual HashSet<Notes> Note { get; set; }
 
     }
 }

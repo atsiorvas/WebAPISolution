@@ -8,10 +8,10 @@ namespace Repository {
         public void Configure(EntityTypeBuilder<User> builder) {
 
             builder
-                .HasKey(x => x.UserId);
+                .HasKey(x => x.Id);
 
             builder
-                .Property(x => x.UserId)
+                .Property(x => x.Id)
                 .ValueGeneratedOnAdd();
         }
     }
