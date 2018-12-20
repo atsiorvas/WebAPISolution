@@ -68,6 +68,16 @@ namespace UserService {
                .As<IRequestHandler<DeleteAsyncCommand<UserModel>, bool>>()
                .InstancePerLifetimeScope();
 
+            builder
+              .RegisterType<DBNotificationHandler>()
+              .As<INotificationHandler<LoggerEvent>>()
+              .InstancePerLifetimeScope();
+
+            builder
+             .RegisterType<FileNotificationHandler>()
+             .As<INotificationHandler<LoggerEvent>>()
+             .InstancePerLifetimeScope();
+
             //register your profiles, or skip this if you don't want them in your container
             builder.RegisterAssemblyTypes().AssignableTo(typeof(UserMapper)).As<Profile>();
             builder.RegisterAssemblyTypes().AssignableTo(typeof(NotesMapper)).As<Profile>();
@@ -88,7 +98,7 @@ namespace UserService {
             .As<IConfigurationProvider>()
             .SingleInstance();
 
-            //register your mapper
+            //register mapper
             builder.Register(c => c.Resolve<MapperConfiguration>()
             .CreateMapper(c.Resolve)).As<IMapper>().InstancePerLifetimeScope();
 

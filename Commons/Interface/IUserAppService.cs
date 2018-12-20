@@ -1,5 +1,6 @@
 ﻿using Common;
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace Common.Interface {
         Task<UserModel> GetUserAsync(string userLogin);
         Task<UserModel> GetUserWithNotesAsync(string email);
         Task<UserModel> SaveUserAsync(UserModel userModel);
-        Task<bool> RemoveUserAsync(int id);
-        Task<int> FindIdByBkAsync(string bk);
+        Task<bool> RemoveUserAsync(long id);
+        Task<long> FindIdByBkAsync(string bk);
     }
 }

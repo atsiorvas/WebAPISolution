@@ -25,7 +25,7 @@ namespace Common.Commands {
 
         public async Task<bool> Handle(DeleteAsyncCommand<TDto> request,
             CancellationToken cancellationToken) {
-            int id = await _userAppService.FindIdByBkAsync((string)request.Bk);
+            long id = await _userAppService.FindIdByBkAsync((string)request.Bk);
             return await _userAppService.RemoveUserAsync(id);
         }
     }

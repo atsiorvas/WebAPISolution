@@ -9,7 +9,7 @@ namespace Common {
         [Key]
         [Required]
         [Column("user_id")]
-        public override int Id { get; protected set; }
+        public override long Id { get; set; }
 
         [Column("first_name")]
         [StringLength(100)]
@@ -44,5 +44,6 @@ namespace Common {
         [Column("notes")]
         public virtual HashSet<Notes> Note { get; set; }
 
+        public AuditedEntity AuditedEntity { get; set; }
     }
 }

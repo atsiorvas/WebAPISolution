@@ -3,22 +3,26 @@ using System.Threading.Tasks;
 using System;
 using Common.Interface;
 using AutoMapper;
+using System.Collections;
+using System.Threading;
 
 namespace Repository {
-    public class UnitOfWork : IDisposable, ISaveChangesWarper {
+    public class UnitOfWork : ISaveChangesWarper {
+
         private readonly UserContext context;
         private GenericRepository<User> userRepository;
         private GenericRepository<Notes> noteRepository;
         private readonly IMapper mapper;
 
-        public UnitOfWork(UserContext context, IMapper mapper) {
+        public UnitOfWork(UserContext context,
+            IMapper mapper) {
             this.context = context;
             this.mapper = mapper;
         }
 
         ~UnitOfWork() {
-            // Finalizer calls Dispose(true)
-            Dispose(true);
+            // Finalizer calls Dispose(false)
+            Dispose(false);
         }
 
         public GenericRepository<User> UserRepository {
@@ -41,8 +45,11 @@ namespace Repository {
             }
         }
 
-        public async Task<bool> SaveChangesAsync() {
-            return await context.SaveChangesAsync();
+        public async Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken
+            = default(CancellationToken)
+            ) {
+            return await context.SaveChangesAsync(cancellationToken);
         }
 
         private bool disposed = false;
@@ -59,6 +66,7 @@ namespace Repository {
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
+
         }
     }
 }

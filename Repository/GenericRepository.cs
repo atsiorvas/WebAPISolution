@@ -6,10 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using AutoMapper;
-using System.Reflection;
 
 namespace Repository {
-    public class GenericRepository<TEntity> where TEntity : Entity {
+    public class GenericRepository<TEntity>
+        where TEntity : Entity, new() {
 
         internal readonly UserContext _context = null;
         internal readonly DbSet<TEntity> _dbSet = null;
@@ -68,6 +68,8 @@ namespace Repository {
                 return await query.Where(filter).FirstOrDefaultAsync();
             }
 
+
+
             return null;
         }
         public virtual TEntity GetByID(object id) {
@@ -124,7 +126,7 @@ namespace Repository {
             }
         }
 
-        public async Task<int> FindIdByBkAsync(
+        public async Task<long> FindIdByBkAsync(
             Expression<Func<TEntity, bool>> filter = null) {
 
             IQueryable<TEntity> query = _dbSet;

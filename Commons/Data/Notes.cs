@@ -7,7 +7,7 @@ namespace Common {
 
         [Key]
         [Column("note_id")]
-        public override int Id { get; protected set; }
+        public override long Id { get; set; }
 
         [Column("text")]
         public string Text { get; set; }
@@ -15,12 +15,12 @@ namespace Common {
         [Column("lang")]
         public int Lang { get; set; }
 
-        [ForeignKey("UserForeignKey")]
         [Column("user_id")]
-        public int UserId { get; set; }
+        [ForeignKey("user")]
+        public long UserId { get; set; }
 
-        [Column("user")]
         public virtual User User { get; set; }
 
+        public AuditedEntity AuditedEntity { get; set; }
     }
 }

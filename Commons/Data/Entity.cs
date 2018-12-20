@@ -1,16 +1,19 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace Common {
     public abstract class Entity {
 
-        int _Id;
+        private long _Id;
+
         private int? _requestedHashCode;
 
-        public virtual int Id {
+        public virtual long Id {
             get {
                 return _Id;
             }
-            protected set {
+            set {
                 _Id = value;
             }
         }

@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Common.Interface {
     public interface ISaveChangesWarper : IDisposable {
-        Task<bool> SaveChangesAsync();
+        Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken
+            = default(CancellationToken)
+        );
     }
 }

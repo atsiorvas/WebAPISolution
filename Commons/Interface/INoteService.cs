@@ -8,8 +8,8 @@ namespace Common {
 
         Task<NotesModel> GetNotesByAsync(string email);
 
-        Task<bool> ModifyNoteByAsync(string email);
-
+        Task<List<NotesModel>> ModifyNoteByAsync(string email, NotesModel noteChanges);
+        Task SaveToFileAsync(NotesModel note);
         Task<bool> DeleteNoteBy(string email);
     }
 }

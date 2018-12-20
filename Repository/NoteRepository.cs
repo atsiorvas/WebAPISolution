@@ -8,7 +8,7 @@ using Common.Interface;
 using Microsoft.EntityFrameworkCore;
 
 namespace Repository {
-    [Obsolete("use UnityOfWork instead")]
+    [Obsolete("use UnityOfWork instead", false)]
     public class NoteRepository : INoteRepository {
 
         private readonly UserContext _context;

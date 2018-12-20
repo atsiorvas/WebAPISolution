@@ -7,6 +7,8 @@ using Repository;
 using System.Reactive.Subjects;
 using System.Linq.Expressions;
 using AutoMapper;
+using System.IO;
+using System.Collections.Generic;
 
 namespace Service {
     public class UserAppService : IUserAppService {
@@ -71,13 +73,15 @@ namespace Service {
                 .UserRepository.GetAsync(true, filter: u => u.Email == email);
             return _mapper.Map<UserModel>(user);
         }
-        public async Task<bool> RemoveUserAsync(int id) {
+        public async Task<bool> RemoveUserAsync(long id) {
             return await _unitOfWork.UserRepository.Delete(id);
         }
 
-        public async Task<int> FindIdByBkAsync(string bk) {
+        public async Task<long> FindIdByBkAsync(string bk) {
             return await _unitOfWork.UserRepository
                 .FindIdByBkAsync(filter: u => u.Email == (string)bk);
         }
+
+       
     }
 }

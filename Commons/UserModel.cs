@@ -28,7 +28,7 @@ namespace Common {
         public string ResetAnswer { get; set; }
 
         [JsonProperty("note")]
-        public List<NotesModel> Note { get; set; }
+        public HashSet<NotesModel> Note { get; set; }
     }
 
 }

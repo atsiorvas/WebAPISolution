@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Common;
 using Common.Commands;
 using Common.Interface;
@@ -263,14 +261,18 @@ namespace UserService.Controllers {
         public async Task<ActionResult<UserModel>> GetUserWithNotesAsync(
             [FromQuery(Name = "email")]string email) {
 
-            var requestCreateGetUserCommand = new
-                GetCommandAsync<UserModel>(email);
+            //var requestCreateGetUserCommand = new
+            //    GetCommandAsync<UserModel>(email);
 
-            var user = await _mediator.Send(requestCreateGetUserCommand);
+            //var user = await _mediator.Send(requestCreateGetUserCommand);
+            var user = await _context.User.Where(u => u.Email == email)
+                .Include(u => u.Note).FirstOrDefaultAsync();
 
             if (user == null) {
                 return NotFound();
             }
+            var notes = user.Note;
+            var x = user;
             return Ok(user);
         }
 
@@ -285,5 +287,29 @@ namespace UserService.Controllers {
             return await _mediator.Send(requestDeleteUserCommand);
         }
 
+        [Route("sendNotification")]
+        [HttpGet]
+        public ActionResult<AlertsParameters> SendNotification() {
+            AlertsParameters _alertsParameters
+                = new AlertsParameters
+                    .Builder()
+                    .WithArguments(new List<string>() { "hello", "space" })
+                    .WithFromDate(DateTime.UtcNow.Date)
+                    .WithToDate(DateTime.UtcNow.AddDays(1))
+                    .build();
+            return Ok(_alertsParameters);
+        }
+
+        [Route("changeNoteBy")]
+        [HttpPost]
+        public async Task<ActionResult<bool>> UpdateNotesByUserAsync(
+            [FromQuery(Name = "email")]string email, NotesModel noteChanges) {
+
+            var logger = new LoggerEvent(noteChanges, email);
+            await _mediator.Publish(logger);
+
+            //List<NotesModel> notes = await _noteService.ModifyNoteByAsync(email, noteChanges);
+            return Ok(true);
+        }
     }
 }
