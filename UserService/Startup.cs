@@ -4,6 +4,7 @@ using Common;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Repository;
 using System;
+using System.IO;
+using System.Text;
+using UserService.Controllers;
 
 namespace UserService {
     public class Startup {
@@ -91,6 +95,26 @@ namespace UserService {
                 .AllowAnyHeader()
                 .AllowCredentials();
             });
+            //app.Use(async (context, next) => {
+            //    var bodyStr = "";
+            //    var req = context.Request;
+
+            //    // Allows using several time the stream in ASP.Net Core
+            //    req.EnableRewind();
+
+            //    // Arguments: Stream, Encoding, detect encoding, buffer size 
+            //    // AND, the most important: keep stream opened
+            //    using (StreamReader reader
+            //              = new StreamReader(req.Body, Encoding.UTF8, true, 1024, true)) {
+            //        bodyStr = reader.ReadToEnd();
+            //    }
+
+            //    // Rewind, so the core is not lost when it looks the body for the request
+            //    req.Body.Position = 0;
+
+            //    await next.Invoke();
+            //});
+            app.UseMiddleware<EndpointMiddlewareErrorTrapper>();
             app.UseMvc();
         }
     }

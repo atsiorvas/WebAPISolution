@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Repository;
-using Service;
 
 namespace UserService.Controllers {
     [Route("api/Users")]
@@ -74,9 +73,10 @@ namespace UserService.Controllers {
          * https://docs.microsoft.com/en-us/aspnet/core/data/ef-rp/sort-filter-page?view=aspnetcore-2.1
          */
         [HttpGet("getUsersWithPaginationAsync")]
-        public async Task<ActionResult> GetUsersWithPaginationAsync(
+        public ActionResult GetUsersWithPagination(
             [FromQuery(Name = "orderBy")]string orderBy,
             [FromQuery(Name = "searchString")]string searchString,
+            [FromQuery(Name = "email")]string email,
             [FromQuery(Name = "pageSize")]int pageSize = 2,
             [FromQuery(Name = "pageNumber")]int pageNumber = 1
             ) {
@@ -84,50 +84,15 @@ namespace UserService.Controllers {
             /*
              * configure properties
              */
+            email = !string.IsNullOrEmpty(email) ? email : string.Empty;
             string nameSort = !string.IsNullOrEmpty(orderBy) ? orderBy : "";
             string currentFilter = !string.IsNullOrEmpty(searchString) ? searchString : "";
 
-            IQueryable<User> query = null;
-
-            if (!string.IsNullOrEmpty(searchString)) {
-                query = _context.User.Include(u => u.Note)
-                    .Where(s => s.LastName.Contains(searchString)
-                                         || s.FirstName.Contains(searchString));
-            } else {
-                query = from user in _context.User
-                        .Include(u => u.Note)
-                        select user;
-            }
-
-            switch (nameSort) {
-                case "last_name_desc":
-                    query = query?.OrderByDescending(s => s.LastName);
-                    break;
-                case "first_name_desc":
-                    query = query?.OrderByDescending(s => s.FirstName);
-                    break;
-                case "email_desc":
-                    query = query?.OrderByDescending(s => s.Email);
-                    break;
-                default:
-                    query = query?.OrderBy(s => s.LastName);
-                    break;
-            }
-
-            PaginatedList<User, UserModel> pagination = new PaginatedList<User, UserModel>(_mapper);
-            PageInfo<UserModel> paginationList = await pagination.CreateItemsAsync(
-                query.AsNoTracking() ?? throw new ArgumentException("Null source"),
-                pageNumber,
-                pageSize);
-
-            return Ok(new {
-                hasNextPage = paginationList.HasNextPage,
-                pageNumber = paginationList.PageNumber,
-                pageSize = paginationList.PageSize,
-                totalSize = paginationList.TotalSize,
-                totalPages = paginationList.TotalPages,
-                users = paginationList.Items
-            });
+            var paginated = _userService
+                .GetUserPaging(email, searchString, nameSort,
+                pageNumber, pageSize);
+            
+            return Ok(paginated);
         }
 
         [Route("AddUserWithNotesAsync")]
@@ -271,8 +236,6 @@ namespace UserService.Controllers {
             if (user == null) {
                 return NotFound();
             }
-            var notes = user.Note;
-            var x = user;
             return Ok(user);
         }
 
@@ -305,11 +268,31 @@ namespace UserService.Controllers {
         public async Task<ActionResult<bool>> UpdateNotesByUserAsync(
             [FromQuery(Name = "email")]string email, NotesModel noteChanges) {
 
-            var logger = new LoggerEvent(noteChanges, email);
-            await _mediator.Publish(logger);
+            // var logger = new LoggerEvent(noteChanges, email);
+            //await _mediator.Publish(logger);
 
             //List<NotesModel> notes = await _noteService.ModifyNoteByAsync(email, noteChanges);
             return Ok(true);
+        }
+
+        [Route("changeUsersNotes")]
+        [HttpPost]
+        public async Task<ActionResult<bool>> UpdateUserAsync(
+            UserModel userModel) {
+
+            // var logger = new LoggerEvent(noteChanges, email);
+            //await _mediator.Publish(logger);
+
+            bool success = await _userService.UpdateUser(userModel);
+            return Ok(success);
+        }
+        [Route("changeUser")]
+        [HttpPost]
+        public async Task<ActionResult<bool>> ChangeUserAsync(
+            UserModel userModel) {
+
+            bool success = await _userService.ChangeUser(userModel);
+            return Ok(success);
         }
     }
 }

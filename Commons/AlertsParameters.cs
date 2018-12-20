@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Repository {
+namespace Common {
     public class AlertsParameters {
 
         public sealed class Builder {
@@ -16,6 +16,7 @@ namespace Repository {
                 Arguments = new List<string>();
             }
             public Builder WithArguments(List<string> arguments) {
+
                 if (arguments == null) {
                     this.Arguments = new List<string>();
                 } else {

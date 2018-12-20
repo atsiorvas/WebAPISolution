@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Common;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Common.Data;
 
-namespace Repository {
-    public class NoteConfiguration : IEntityTypeConfiguration<Notes> {
+namespace Common {
+    public class AlertEntityConfiguration
+            : IEntityTypeConfiguration<Alert> {
 
-        public void Configure(EntityTypeBuilder<Notes> builder) {
+        public void Configure(EntityTypeBuilder<Alert> builder) {
             //NoteId
             builder
                 .Property(x => x.Id)
@@ -20,9 +22,22 @@ namespace Repository {
 
             //Lang
             builder
-               .Property(n => n.Lang)
-               .HasColumnType("TINYINT")
+               .Property(n => n.Arguments)
+               .HasColumnType("nvarchar(100)")
                .IsRequired();
+
+            //DateCreated
+            builder
+               .Property(n => n.DateCreated)
+               .HasColumnType("datetime2")
+               .IsRequired();
+
+            builder
+             .Property(n => n.DateSent)
+             .HasColumnType("datetime2")
+             .IsRequired();
+
+
 
             //Embedded
             builder
@@ -47,12 +62,13 @@ namespace Repository {
             //RelationShip
             builder
                 .HasOne(n => n.User)
-                .WithMany(x => x.Note)
+                .WithMany(x => x.Alert)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder
-                 .ToTable("note", "dbo");
+                 .ToTable("alert", "dbo");
         }
     }
+
 }

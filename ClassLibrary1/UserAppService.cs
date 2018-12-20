@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using AutoMapper;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Service {
     public class UserAppService : IUserAppService {
@@ -58,9 +59,22 @@ namespace Service {
                 UserRepository.IsExistsAsync(filter: q => q.Email == email)) {
                 return null;
             }
-            UserModel user = await _userRepository.SaveUserAsync(userModel);
+            var userEntry = _mapper.Map<User>(userModel);
 
-            return user;
+            //AuditedEntity audit = new AuditedEntity() {
+            //    CreatedBy = "Admin",
+            //    CreatedOn = DateTime.UtcNow,
+            //    UpdatedOn = DateTime.UtcNow
+            //};
+            //userEntry.AuditedEntity = audit;
+
+            //foreach (var note in userEntry.Note) {
+            //    note.AuditedEntity = audit;
+            //}
+
+            await _unitOfWork.UserRepository.SaveAsync(userEntry);
+
+            return userModel;
         }
 
         public async Task<UserModel> GetUserAsync(string email) {
@@ -81,7 +95,67 @@ namespace Service {
             return await _unitOfWork.UserRepository
                 .FindIdByBkAsync(filter: u => u.Email == (string)bk);
         }
+        public async Task<bool> UpdateUser(UserModel userModel) {
+            var userEntity = _mapper.Map<User>(userModel);
+            userEntity.Id = 1;
+            return await _unitOfWork.UserRepository.UpdateAsync(userEntity);
 
-       
+        }
+        public async Task<bool> ChangeUser(UserModel userModel) {
+            try {
+                User user = await _unitOfWork.UserRepository
+                   .GetAsync(true, filter: u => u.Email == userModel.Email);
+
+                user = _mapper.Map<User>(userModel);
+                if (user.AuditedEntity == null) {
+                    user.AuditedEntity = new AuditedEntity();
+                }
+                await _unitOfWork.UserRepository.UpdateAsync(user);
+                await _unitOfWork.UserRepository.SaveAsync(user);
+                return true;
+            } catch (Exception ex) {
+                return false;
+            }
+        }
+
+        public PaginatedList<UserModel> GetUserPaging(string email,
+            string searchString, string nameSort, int pageNumber, int pageSize) {
+            try {
+                IQueryable<User> query = null;
+
+                if (!string.IsNullOrEmpty(searchString)) {
+                    query = _unitOfWork.UserRepository.GetQuery(true,
+                        filter: s => (s.LastName.Contains(searchString)
+                                               || s.FirstName.Contains(searchString)));
+                } else {
+                    query = _unitOfWork.UserRepository
+                            .GetQuery(true, filter: u => u.Email == email);
+                }
+
+                switch (nameSort) {
+                    case "last_name_desc":
+                        query = query?.OrderByDescending(s => s.LastName);
+                        break;
+                    case "first_name_desc":
+                        query = query?.OrderByDescending(s => s.FirstName);
+                        break;
+                    case "email_desc":
+                        query = query?.OrderByDescending(s => s.Email);
+                        break;
+                    default:
+                        query = query?.OrderBy(s => s.LastName);
+                        break;
+                }
+
+                PaginatedList<User> pagination
+                    = new PaginatedList<User>(query, pageNumber, pageSize);
+
+                PaginatedList<UserModel> paginated
+                    = _mapper.Map<PaginatedList<UserModel>>(pagination);
+                return paginated;
+            } catch (Exception ex) {
+                return null;
+            }
+        }
     }
 }

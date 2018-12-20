@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Common;
 using Common.Interface;
+using System.Collections.Generic;
 
 namespace Mapper {
     public class UserMapper : Profile, IUserMapper {
@@ -30,6 +31,10 @@ namespace Mapper {
                 src.MapFrom(srcUser => srcUser.Note))
             .ForMember(dest => dest.IsAdmin, src => src.Ignore())
             .ForMember(dest => dest.Id, src => src.Ignore());
+
+            CreateMap<PaginatedList<User>, PaginatedList<UserModel>>()
+                .ForMember(dest => dest.Elements, opt => opt.MapFrom<IList<User>>(src => src.Elements))
+                .ForMember(dest => dest.PageInfo, opt => opt.MapFrom<PageInfo>(src => src.PageInfo));
         }
     }
 }

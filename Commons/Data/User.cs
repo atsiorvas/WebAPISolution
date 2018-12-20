@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Common.Data;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -41,9 +42,10 @@ namespace Common {
         [DataType(DataType.Text)]
         public string ResetAnswer { get; set; }
 
-        [Column("notes")]
         public virtual HashSet<Notes> Note { get; set; }
 
-        public AuditedEntity AuditedEntity { get; set; }
+        public virtual HashSet<Alert> Alert { get; set; }
+
+        public AuditedEntity AuditedEntity { get; set; } = AuditedEntity.Empty;
     }
 }

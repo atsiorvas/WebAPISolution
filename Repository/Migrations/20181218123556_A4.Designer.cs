@@ -3,57 +3,23 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Repository;
 
 namespace Repository.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20181218123556_A4")]
+    partial class A4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("Common.Data.Alert", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnName("alert_id")
-                        .HasColumnType("BIGINT")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Arguments")
-                        .IsRequired()
-                        .HasColumnName("arguments")
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnName("date_created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DateSent")
-                        .HasColumnName("date_sent")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnName("text")
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("UserId")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("alert","dbo");
-                });
 
             modelBuilder.Entity("Common.Notes", b =>
                 {
@@ -120,41 +86,6 @@ namespace Repository.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("user","dbo");
-                });
-
-            modelBuilder.Entity("Common.Data.Alert", b =>
-                {
-                    b.HasOne("Common.User", "User")
-                        .WithMany("Alert")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.OwnsOne("Common.AuditedEntity", "AuditedEntity", b1 =>
-                        {
-                            b1.Property<long>("AlertId")
-                                .ValueGeneratedOnAdd()
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                            b1.Property<string>("CreatedBy")
-                                .IsRequired()
-                                .HasColumnName("created_by")
-                                .HasColumnType("nvarchar(100)");
-
-                            b1.Property<DateTime>("CreatedOn")
-                                .HasColumnName("created_on")
-                                .HasColumnType("datetime2");
-
-                            b1.Property<DateTime?>("UpdatedOn")
-                                .HasColumnName("updated_on")
-                                .HasColumnType("datetime2");
-
-                            b1.ToTable("alert","dbo");
-
-                            b1.HasOne("Common.Data.Alert")
-                                .WithOne("AuditedEntity")
-                                .HasForeignKey("Common.AuditedEntity", "AlertId")
-                                .OnDelete(DeleteBehavior.Cascade);
-                        });
                 });
 
             modelBuilder.Entity("Common.Notes", b =>

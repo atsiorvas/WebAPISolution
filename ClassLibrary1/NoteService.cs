@@ -39,6 +39,9 @@ namespace Service {
             NotesModel noteChanges) {
             User user = await _unitOfWork.UserRepository
                     .GetAsync(Eager, filter: e => e.Email == email);
+
+
+
             if (user != null) {
                 Notes noteMap = _mapper.Map<Notes>(noteChanges);
                 foreach (var note in user.Note) {

@@ -67,11 +67,26 @@ namespace Repository {
                 }
                 return await query.Where(filter).FirstOrDefaultAsync();
             }
-
-
-
             return null;
         }
+
+        public virtual IQueryable<TEntity> GetQuery(bool eager = false,
+           Expression<Func<TEntity, bool>> filter = null) {
+            IQueryable<TEntity> query = _dbSet.AsNoTracking();
+
+            if (filter != null) {
+                if (eager) {
+                    foreach (var property in
+                        _context.Model.FindEntityType(typeof(TEntity))
+                        .GetNavigations()) {
+                        query = query.Include(property.Name);
+                    }
+                }
+                return query.Where(filter);
+            }
+            return null;
+        }
+
         public virtual TEntity GetByID(object id) {
 
             return _dbSet.Find(id);
@@ -104,18 +119,21 @@ namespace Repository {
             }
         }
 
-        public virtual async Task UpdateAsync(TEntity entityToUpdate) {
-            _dbSet.Attach(entityToUpdate);
-            _context.Entry(entityToUpdate).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+        public virtual async Task<bool> UpdateAsync(TEntity entityToUpdate) {
+            try {
+                _dbSet.Attach(entityToUpdate);
+                _context.Entry(entityToUpdate).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return true;
+            } catch (Exception ex) {
+                return false;
+            }
         }
 
         public async Task<TEntity> SaveAsync(TEntity model) {
             try {
 
-                var mappingModel = _mapper.Map<TEntity>(model);
-
-                var modelToSave = _dbSet.Add(mappingModel).Entity;
+                var modelToSave = _dbSet.Add(model).Entity;
                 //update db
                 await _context.SaveChangesAsync();
 

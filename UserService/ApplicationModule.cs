@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repository;
 using Service;
-using System.Collections.Generic;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 using Module = Autofac.Module;
 
@@ -19,7 +18,6 @@ namespace UserService {
 
         public ApplicationModule(string qconstr) {
             QueriesConnectionString = qconstr;
-
         }
         public ApplicationModule() { }
 
@@ -56,17 +54,21 @@ namespace UserService {
                 .AsSelf()
                 .InstancePerLifetimeScope();
 
-            builder.RegisterType<CreateCommandHandler<UserModel>>()
-                .As<IRequestHandler<CreateCommand<UserModel>, UserModel>>()
-                .InstancePerLifetimeScope();
+            builder.RegisterGeneric(typeof(CreateCommandHandler<>))
+                .As(typeof(IRequestHandler<,>))
+                .InstancePerDependency();
 
-            builder.RegisterType<GetAsyncHandler<UserModel>>()
-                .As<IRequestHandler<GetCommandAsync<UserModel>, UserModel>>()
-                .InstancePerLifetimeScope();
+            //builder.RegisterType<CreateCommandHandler<UserModel>>()
+            //    .As<IRequestHandler<CreateCommand<UserModel>, UserModel>>()
+            //    .InstancePerLifetimeScope();
 
-            builder.RegisterType<DeleteAsyncHandler<UserModel>>()
-               .As<IRequestHandler<DeleteAsyncCommand<UserModel>, bool>>()
-               .InstancePerLifetimeScope();
+            //builder.RegisterType<GetAsyncHandler<UserModel>>()
+            //    .As<IRequestHandler<GetCommandAsync<UserModel>, UserModel>>()
+            //    .InstancePerLifetimeScope();
+
+            //builder.RegisterType<DeleteAsyncHandler<UserModel>>()
+            //   .As<IRequestHandler<DeleteAsyncCommand<UserModel>, bool>>()
+            //   .InstancePerLifetimeScope();
 
             builder
               .RegisterType<DBNotificationHandler>()
@@ -79,7 +81,9 @@ namespace UserService {
              .InstancePerLifetimeScope();
 
             //register your profiles, or skip this if you don't want them in your container
-            builder.RegisterAssemblyTypes().AssignableTo(typeof(UserMapper)).As<Profile>();
+            builder.RegisterAssemblyTypes()
+                .AssignableTo(typeof(UserMapper))
+                .As<Profile>();
             builder.RegisterAssemblyTypes().AssignableTo(typeof(NotesMapper)).As<Profile>();
 
             //register your configuration as a single instance

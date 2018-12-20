@@ -29,9 +29,9 @@ namespace Common {
               .NotEmpty()
               .NotNull()
               .WithMessage("The Password attribute cannot be blank");
-            RuleFor(user => user.Note)
-               .NotEmpty()
-               .ListMustContainFewerThan(3);
+            //RuleFor(user => user.Note)
+            //   .NotEmpty()
+            //   .ListMustContainFewerThan(3);
         }
     }
 }

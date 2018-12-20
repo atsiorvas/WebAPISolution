@@ -17,23 +17,24 @@ namespace Repository {
             //Embedded      
             builder
                 .OwnsOne(n => n.AuditedEntity)
-                    .Property(a => a.CreatedBy)
-                    .HasColumnName("created_by")
-                    .HasColumnType("nvarchar(100)")
-                    .IsRequired();
+                .Property(a => a.CreatedBy)
+                .HasColumnName("created_by")
+                .HasColumnType("nvarchar(100)")
+                .IsRequired();
 
             builder
-            .OwnsOne(n => n.AuditedEntity)
+                .OwnsOne(n => n.AuditedEntity)
                 .Property(a => a.CreatedOn)
                 .HasColumnName("created_on")
                 .HasColumnType("datetime2");
 
-            builder.OwnsOne(n => n.AuditedEntity)
+            builder
+                .OwnsOne(n => n.AuditedEntity)
                 .Property(a => a.UpdatedOn)
                 .HasColumnName("updated_on")
                 .HasColumnType("datetime2");
 
-            builder.ToTable("user", "user");
+            builder.ToTable("user", "dbo");
         }
     }
 

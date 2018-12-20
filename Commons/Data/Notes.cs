@@ -21,6 +21,6 @@ namespace Common {
 
         public virtual User User { get; set; }
 
-        public AuditedEntity AuditedEntity { get; set; }
+        public AuditedEntity AuditedEntity { get; set; } = AuditedEntity.Empty;
     }
 }

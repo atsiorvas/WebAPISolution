@@ -9,10 +9,12 @@ namespace Common {
     [Owned]
     public class AuditedEntity : ITrack {
 
+        internal static readonly AuditedEntity Empty = new AuditedEntity();
+
         [Required]
         [Column("create_on")]
         private DateTime _CreatedOn;
-        
+
         [Column("updated_on")]
         private DateTime? _UpdatedOn;
 

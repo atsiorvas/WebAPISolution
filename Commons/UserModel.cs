@@ -8,7 +8,7 @@ namespace Common {
 
     [Serializable]
     public class UserModel : DTO {
-
+        
         [JsonProperty("email")]
         public string Email { get; set; }
 

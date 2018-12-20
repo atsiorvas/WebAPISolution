@@ -14,5 +14,9 @@ namespace Common.Interface {
         Task<UserModel> SaveUserAsync(UserModel userModel);
         Task<bool> RemoveUserAsync(long id);
         Task<long> FindIdByBkAsync(string bk);
+        Task<bool> UpdateUser(UserModel userModel);
+        Task<bool> ChangeUser(UserModel userModel);
+        PaginatedList<UserModel> GetUserPaging(string email,
+           string searchString, string nameSort, int pageNumber, int pageSize);
     }
 }

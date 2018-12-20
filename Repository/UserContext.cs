@@ -4,14 +4,12 @@ using MediatR;
 using System.Threading.Tasks;
 using System;
 using Common.Interface;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore.Design;
 using Entity = System.Data.Entity;
 using System.Threading;
-using System.Linq;
 using System.IO;
-using System.Globalization;
+using Common.Data;
 
 namespace Repository {
 
@@ -25,7 +23,6 @@ namespace Repository {
 
         private const string DateTimeFormatConst = "yyyy-MM-dd";
 
-
         private readonly IMediator _mediator;
 
         public virtual DbSet<User>
@@ -34,6 +31,8 @@ namespace Repository {
         public virtual DbSet<Notes>
             Notes { get; set; }
 
+        public virtual DbSet<Alert>
+            Alert { get; set; }
         //ctro #1 -- default ctro 
         public UserContext() { }
 
@@ -51,83 +50,42 @@ namespace Repository {
 
         }
 
-        //public async Task<bool> SaveChangesAsync() {
-        //    //await _mediator.DispatchDomainEventsAsync(this);
-        //    var result = await base.SaveChangesAsync();
-
-        //    return true;
-        //}
-
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new NoteConfiguration());
-            //modelBuilder.ApplyConfiguration(new AuditedEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new AlertEntityConfiguration());
         }
         public override async Task<int> SaveChangesAsync(
             CancellationToken cancellationToken = default(CancellationToken)) {
 
-            DateTime dt = DateTime.UtcNow;
-
-            this.ChangeTracker.DetectChanges();
-            var changes = this.ChangeTracker.Entries();
-
-            //Added audit
-            var added = changes
-                .Where(t => t.State == EntityState.Added)
-                .Select(t => t.Entity)
-                .ToArray();
-
-            foreach (var entity in added) {
-
-                var entityName = entity.GetType();
-
-                if (entityName == typeof(User)) {
-                    var track = entity as User;
-                    track.AuditedEntity = new AuditedEntity {
-                        CreatedOn = dt,
-                        CreatedBy = track.Email
-                    };
-                } else {
-                    var track = entity as Notes;
-                    track.AuditedEntity = new AuditedEntity {
-                        CreatedOn = dt,
-                        CreatedBy = track.User.Email
-                    };
-                }
-            }
-
-            //Modified audit
-            var updated = this.ChangeTracker.Entries()
-               .Where(t => t.State == EntityState.Modified)
-               .Select(t => t.Entity)
-               .ToArray();
-
-            foreach (var entity in updated) {
-                var entityName = entity.GetType();
-
-                if (entityName == typeof(User)) {
-                    var track = entity as User;
-                    track.AuditedEntity.UpdatedOn = dt;
-                } else {
-                    var track = entity as Notes;
-                    track.AuditedEntity.UpdatedOn = dt;
-                }
-                //if (entityName == typeof(Notes)) {
-                //    var track = entity as Notes;
-                //    if (track.AuditedEntity == null) {
-                //        track.AuditedEntity = new AuditedEntity() {
-                //            CreatedOn = dt,
-                //            CreatedBy = track.User.Email
-                //        };
-                //    }
-                //    track.User.AuditedEntity.UpdatedOn = dt;
-                //}
-            }
+            //Audit
+            this.ApplyAuditInformation();
 
             //return base.SaveChanges
             return (await base.SaveChangesAsync(true, cancellationToken));
+        }
+
+        private void ApplyAuditInformation() {
+
+            var entries = ChangeTracker.Entries();
+
+            foreach (var entry in entries) {
+
+                if (entry.Entity is ITrack track) {
+
+                    switch (entry.State) {
+                        case EntityState.Added:
+                            track.CreatedOn = DateTime.UtcNow;
+                            track.CreatedBy = "Admin";
+                            break;
+                        case EntityState.Modified:
+                            track.UpdatedOn = DateTime.UtcNow;
+                            break;
+                    }
+                }
+            }
         }
     }
 

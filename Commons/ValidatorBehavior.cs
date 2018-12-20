@@ -15,18 +15,18 @@ namespace Common {
             CancellationToken cancellationToken,
             RequestHandlerDelegate<TResponse> next) {
 
-            var failures = _validators
-                .Select(v => v.Validate(request))
-                .SelectMany(result => result.Errors)
-                .Where(error => error != null)
-                .ToList();
+            //    var failures = _validators
+            //        .Select(v => v.Validate(request))
+            //        .SelectMany(result => result.Errors)
+            //        .Where(error => error != null)
+            //        .ToList();
 
-            if (failures.Any()) {
-                throw new Exception(
-                    $"Command Validation Errors for type {typeof(TRequest).Name}",
-                    new System.ComponentModel
-                    .DataAnnotations.ValidationException("Validation exception"));
-            }
+            //    if (failures.Any()) {
+            //        throw new Exception(
+            //            $"Command Validation Errors for type {typeof(TRequest).Name}",
+            //            new System.ComponentModel
+            //            .DataAnnotations.ValidationException("Validation exception"));
+            //    }
 
             var response = await next();
             return response;
