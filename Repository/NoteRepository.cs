@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common;
+using Common.Info;
 using Common.Interface;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,7 +35,8 @@ namespace Repository {
                 DbSet<User> users = _context.User;
 
                 User user = _context.User
-                    .Where(u => u.Email == email).Include(u => u.Note).First();
+                    .Where(u => u.Email == email)
+                    .Include(u => u.Note).First();
 
                 List<Notes> newNotesToMap = new List<Notes>();
 

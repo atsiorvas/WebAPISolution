@@ -20,7 +20,12 @@ namespace Repository {
             _dbSet = context.Set<TEntity>() ?? throw new ArgumentNullException("dbSet");
             _mapper = mapper ?? throw new ArgumentNullException("mapper");
         }
+        public virtual void AddOrUpdate(TEntity entity) {
 
+            _context.Entry(entity).State = entity.Id == 0 ?
+                                EntityState.Added :
+                                EntityState.Modified;
+        }
 
         public virtual async Task<bool> IsExistsAsync(
             Expression<Func<TEntity, bool>> filter = null) {
@@ -119,11 +124,10 @@ namespace Repository {
             }
         }
 
-        public virtual async Task<bool> UpdateAsync(TEntity entityToUpdate) {
+        public virtual bool Update(TEntity entityToUpdate) {
             try {
                 _dbSet.Attach(entityToUpdate);
                 _context.Entry(entityToUpdate).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
                 return true;
             } catch (Exception ex) {
                 return false;
@@ -132,7 +136,6 @@ namespace Repository {
 
         public async Task<TEntity> SaveAsync(TEntity model) {
             try {
-
                 var modelToSave = _dbSet.Add(model).Entity;
                 //update db
                 await _context.SaveChangesAsync();

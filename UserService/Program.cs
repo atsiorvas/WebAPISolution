@@ -12,7 +12,7 @@ namespace UserService {
             WebHost.CreateDefaultBuilder(args)
             .UseContentRoot(Directory.GetCurrentDirectory())
             .UseIISIntegration()
-                .UseHealthChecks("/hc")
+                //.UseHealthChecks("/hc")
                 .UseStartup<Startup>();
     }
 }

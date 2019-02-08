@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Common;
+using Common.Info;
 using Common.Interface;
 using Microsoft.EntityFrameworkCore;
 using System;

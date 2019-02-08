@@ -8,7 +8,8 @@ namespace Common {
             : IEntityTypeConfiguration<Alert> {
 
         public void Configure(EntityTypeBuilder<Alert> builder) {
-            //NoteId
+
+            //AlertId
             builder
                 .Property(x => x.Id)
                 .HasColumnType("BIGINT")
@@ -37,8 +38,6 @@ namespace Common {
              .HasColumnType("datetime2")
              .IsRequired();
 
-
-
             //Embedded
             builder
                 .OwnsOne(n => n.AuditedEntity)
@@ -59,16 +58,8 @@ namespace Common {
                 .HasColumnName("updated_on")
                 .HasColumnType("datetime2");
 
-            //RelationShip
-            builder
-                .HasOne(n => n.User)
-                .WithMany(x => x.Alert)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder
                  .ToTable("alert", "dbo");
         }
     }
-
 }

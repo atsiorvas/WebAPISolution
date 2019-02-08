@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common;
+using Common.AbstractValidator;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,9 +16,16 @@ using System;
 using System.IO;
 using System.Text;
 using UserService.Controllers;
+using IdentityServer4.Test;
+using System.Collections.Generic;
+using AutoMapper;
+using Mapper;
+using System.Reflection;
 
 namespace UserService {
     public class Startup {
+
+
 
         private readonly IConfiguration _configuration;
 
@@ -32,14 +40,16 @@ namespace UserService {
             //services.AddScoped<IUserAppService, UserAppService>();
             //services.AddScoped<INoteService, NoteService>();
             //services.AddScoped(typeof(UnitOfWork));
+            services.AddHttpContextAccessor();
 
-            //// Auto Mapper Configurations
+            // Auto Mapper Configurations
             //var mappingConfig = new MapperConfiguration(mc => {
             //    mc.AllowNullDestinationValues = true;
             //    mc.CreateMissingTypeMaps = false;
             //    mc.AllowNullCollections = true;
             //    mc.AddProfile(new UserMapper());
             //    mc.AddProfile(new NotesMapper());
+            //    mc.AddProfile(new AlertMapper());
             //});
 
             //IMapper mapper = mappingConfig.CreateMapper();
@@ -48,15 +58,23 @@ namespace UserService {
             //services.AddAutoMapper(Assembly.GetAssembly(typeof(UserMapper)));
 
             //add health check for this service
-            services.AddHealthChecks(checks => {
-                var minutes = 1;
+            //services.AddHealthChecks(checks => {
+            //    var minutes = 1;
 
-                if (int.TryParse(_configuration["HealthCheck:Timeout"],
-                    out var minutesParsed)) {
-                    minutes = minutesParsed;
-                }
-                //checks.AddSqlCheck("UsersContext", _configuration["ConnectionDB"]);
-            });
+            //    if (int.TryParse(_configuration["HealthCheck:Timeout"],
+            //        out var minutesParsed)) {
+            //        minutes = minutesParsed;
+            //    }
+            //    //checks.AddSqlCheck("UsersContext", _configuration["ConnectionDB"]);
+            //});
+
+            services.AddIdentityServer()
+                 // .AddInMemoryIdentityResources(Config.GetIdentityResources())
+                 .AddInMemoryApiResources(Config.GetApis())
+                 .AddInMemoryClients(Config.GetClients());
+
+            // rest omitted
+
 
             //services.AddDbContext<UserContext>(options =>
             //   options.UseSqlServer(_configuration["ConnectionDB"]));
@@ -71,6 +89,7 @@ namespace UserService {
                 .AddJsonOptions(options => {
                     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    //options.SerializerSettings.Converters.Add(new UserConverter());
                 });
 
             //configure autofac
@@ -95,26 +114,11 @@ namespace UserService {
                 .AllowAnyHeader()
                 .AllowCredentials();
             });
-            //app.Use(async (context, next) => {
-            //    var bodyStr = "";
-            //    var req = context.Request;
 
-            //    // Allows using several time the stream in ASP.Net Core
-            //    req.EnableRewind();
+            //app.UseAuthentication();
+            //app.UseIdentityServer();
 
-            //    // Arguments: Stream, Encoding, detect encoding, buffer size 
-            //    // AND, the most important: keep stream opened
-            //    using (StreamReader reader
-            //              = new StreamReader(req.Body, Encoding.UTF8, true, 1024, true)) {
-            //        bodyStr = reader.ReadToEnd();
-            //    }
-
-            //    // Rewind, so the core is not lost when it looks the body for the request
-            //    req.Body.Position = 0;
-
-            //    await next.Invoke();
-            //});
-            app.UseMiddleware<EndpointMiddlewareErrorTrapper>();
+            // app.UseMiddleware<EndpointMiddlewareErrorTrapper>();
             app.UseMvc();
         }
     }

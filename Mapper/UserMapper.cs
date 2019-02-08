@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Common;
+using Common.Info;
 using Common.Interface;
 using System.Collections.Generic;
 
@@ -21,7 +22,7 @@ namespace Mapper {
             .ForMember(dest => dest.FirstName, src => src.MapFrom<string>(srcUser => srcUser.FirstName))
             .ForMember(dest => dest.RememberMe, src => src.MapFrom<bool>(srcUser => srcUser.RememberMe))
             .ForMember(dest => dest.ResetAnswer, src => src.Ignore())
-            .ForMember(dest => dest.Note, src => src.MapFrom(sourceMember: srcUser => srcUser.Note))
+            .ForMember(dest => dest.Note, src => src.MapFrom(srcUser => srcUser.Note))
             .ReverseMap()
             .ForMember(dest => dest.FirstName, src => src.MapFrom<string>(srcUser => srcUser.FirstName))
             .ForMember(dest => dest.LastName, src => src.MapFrom<string>(srcUser => srcUser.LastName))

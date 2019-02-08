@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Common;
+using Common.Info;
 using System.Collections.Generic;
 
 namespace Mapper {
@@ -24,7 +25,6 @@ namespace Mapper {
             .ForMember(dest => dest.Lang, opt => opt.MapFrom<int>(src => src.Lang));
 
             CreateMap<Notes, long>().ConvertUsing(new NoteToLongConverter());
-
         }
     }
 

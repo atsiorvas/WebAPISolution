@@ -7,12 +7,17 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Common;
 using Common.Commands;
+using Common.Data;
+using Common.Info;
 using Common.Interface;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Repository;
+using Service;
+using OptimaJet.DWKit;
 
 namespace UserService.Controllers {
     [Route("api/Users")]
@@ -27,6 +32,7 @@ namespace UserService.Controllers {
         private readonly UnitOfWork _unitOfWork;
         private readonly ILogger<UserController> _logger;
         private readonly INoteService _noteService;
+        private readonly AlertService _alertService;
 
         public UserController(
             IUserAppService userService,
@@ -36,7 +42,8 @@ namespace UserService.Controllers {
             IMediator mediator,
             UnitOfWork unitOfWork,
             ILogger<UserController> logger,
-            INoteService noteService) {
+            INoteService noteService,
+            AlertService alertService) {
             _userService = userService ?? throw new ArgumentNullException("userService");
             _context = context ?? throw new ArgumentNullException("context");
             _mapper = mapper ?? throw new ArgumentNullException("mapper");
@@ -45,6 +52,7 @@ namespace UserService.Controllers {
             _mediator = mediator ?? throw new ArgumentNullException("mediator");
             _logger = logger ?? throw new ArgumentNullException("logger");
             _noteService = noteService ?? throw new ArgumentNullException("noteService");
+            _alertService = alertService ?? throw new ArgumentNullException("alertService");
         }
 
         [HttpPost]
@@ -91,7 +99,7 @@ namespace UserService.Controllers {
             var paginated = _userService
                 .GetUserPaging(email, searchString, nameSort,
                 pageNumber, pageSize);
-            
+
             return Ok(paginated);
         }
 
@@ -251,16 +259,62 @@ namespace UserService.Controllers {
         }
 
         [Route("sendNotification")]
-        [HttpGet]
-        public ActionResult<AlertsParameters> SendNotification() {
+        [HttpPost]
+        public async Task<ActionResult<AlertInfo>>
+            SendNotificationAsync([FromQuery]string email, OrderInfo orderInfo) {
+
+            email = email ?? string.Empty;
+
+            User user = await _unitOfWork.UserRepository.GetAsync(filter: u => u.Email == email);
+            if (user == null) {
+                return BadRequest();
+            }
             AlertsParameters _alertsParameters
                 = new AlertsParameters
                     .Builder()
-                    .WithArguments(new List<string>() { "hello", "space" })
-                    .WithFromDate(DateTime.UtcNow.Date)
-                    .WithToDate(DateTime.UtcNow.AddDays(1))
+                    .WithArguments(new List<string>() { "hello11", "space222" })
+                    .WithFromDate(DateTime.UtcNow)
+                    .WithToDate(DateTime.UtcNow)
+                    .WithDateCreated(DateTime.UtcNow.AddMonths(1))
+                    .WithText("customer")
+                    .WithDateSent(DateTime.UtcNow)
+                    .WithUser(user)
                     .build();
-            return Ok(_alertsParameters);
+            Alert alert = _alertService.CreateAndPopulate(_alertsParameters);
+
+            using (var contex = _context) {
+
+                OrderAlert order2Alert1 = new OrderAlert();
+                OrderAlert order2Alert2 = new OrderAlert();
+
+                order2Alert1.Alert = alert;
+                order2Alert2.Alert = alert;
+
+
+                var order1 = _mapper.Map<Order>(orderInfo);
+
+                var order2 = _mapper.Map<Order>(orderInfo);
+
+
+                order2Alert1.Order = order1;
+
+                order2Alert2.Order = order2;
+
+                contex.Add(order2Alert1);
+                contex.Add(order2Alert2);
+
+
+                contex.Order.Add(order1);
+                contex.Order.Add(order2);
+
+                contex.Alert.Add(alert);
+                contex.Alert.Add(alert);
+
+                await contex.SaveChangesAsync();
+
+            }
+
+            return Ok();
         }
 
         [Route("changeNoteBy")]
@@ -268,10 +322,10 @@ namespace UserService.Controllers {
         public async Task<ActionResult<bool>> UpdateNotesByUserAsync(
             [FromQuery(Name = "email")]string email, NotesModel noteChanges) {
 
-            // var logger = new LoggerEvent(noteChanges, email);
-            //await _mediator.Publish(logger);
+            var logger = new LoggerEvent(noteChanges, email);
+            await _mediator.Publish(logger);
 
-            //List<NotesModel> notes = await _noteService.ModifyNoteByAsync(email, noteChanges);
+            List<NotesModel> notes = await _noteService.ModifyNoteByAsync(email, noteChanges);
             return Ok(true);
         }
 
@@ -294,5 +348,6 @@ namespace UserService.Controllers {
             bool success = await _userService.ChangeUser(userModel);
             return Ok(success);
         }
+
     }
 }

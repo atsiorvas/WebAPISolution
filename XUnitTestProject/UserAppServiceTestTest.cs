@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using System.Globalization;
+using Common.Info;
 
 namespace XUnitTestProject {
     public class UserRepositoryTest {

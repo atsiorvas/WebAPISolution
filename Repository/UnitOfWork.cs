@@ -5,6 +5,8 @@ using Common.Interface;
 using AutoMapper;
 using System.Collections;
 using System.Threading;
+using Common.Data;
+using System.Linq;
 
 namespace Repository {
     public class UnitOfWork : ISaveChangesWarper {
@@ -13,6 +15,7 @@ namespace Repository {
         private GenericRepository<User> userRepository;
         private GenericRepository<Notes> noteRepository;
         private readonly IMapper mapper;
+        private GenericRepository<Alert> alertRepository;
 
         public UnitOfWork(UserContext context,
             IMapper mapper) {
@@ -43,6 +46,23 @@ namespace Repository {
                 }
                 return noteRepository;
             }
+        }
+
+        public GenericRepository<Alert> AlertRepository {
+            get {
+                if (this.alertRepository == null) {
+                    this.alertRepository =
+                        new GenericRepository<Alert>(context, mapper);
+                }
+                return alertRepository;
+            }
+        }
+
+        /*
+         * Check if entity exist in database
+         */
+        public bool Exists<T>(T entity) where T : Entity {
+            return context.Set<T>().Local.Any(e => e == entity);
         }
 
         public async Task<int> SaveChangesAsync(

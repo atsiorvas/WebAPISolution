@@ -10,6 +10,7 @@ using Entity = System.Data.Entity;
 using System.Threading;
 using System.IO;
 using Common.Data;
+using System.Linq;
 
 namespace Repository {
 
@@ -33,6 +34,13 @@ namespace Repository {
 
         public virtual DbSet<Alert>
             Alert { get; set; }
+
+        public virtual DbSet<Order>
+            Order { get; set; }
+
+        public virtual DbSet<OrderAlert>
+            OrderAlert { get; set; }
+
         //ctro #1 -- default ctro 
         public UserContext() { }
 
@@ -47,15 +55,24 @@ namespace Repository {
             IMediator mediator)
             : base(options) {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-            base.OnModelCreating(modelBuilder);
+
 
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new NoteConfiguration());
             modelBuilder.ApplyConfiguration(new AlertEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new OrderConfiguration());
+            modelBuilder.ApplyConfiguration(new OrderAlertConfiguration());
+
+            foreach (
+                var relationship in modelBuilder.Model.GetEntityTypes()
+                .SelectMany(e => e.GetForeignKeys())
+                ) {
+                relationship.DeleteBehavior = DeleteBehavior.Restrict;
+            }
+            base.OnModelCreating(modelBuilder);
         }
         public override async Task<int> SaveChangesAsync(
             CancellationToken cancellationToken = default(CancellationToken)) {
@@ -79,6 +96,7 @@ namespace Repository {
                         case EntityState.Added:
                             track.CreatedOn = DateTime.UtcNow;
                             track.CreatedBy = "Admin";
+
                             break;
                         case EntityState.Modified:
                             track.UpdatedOn = DateTime.UtcNow;
@@ -92,7 +110,7 @@ namespace Repository {
     public class UserDbContextFactory
         : IDesignTimeDbContextFactory<UserContext> {
 
-        private IConfigurationRoot _configuration;
+        private readonly IConfigurationRoot _configuration;
 
         public UserDbContextFactory() {
             var builder = new ConfigurationBuilder()
