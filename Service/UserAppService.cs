@@ -8,6 +8,7 @@ using AutoMapper;
 using System.Linq;
 using Common.Info;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Service {
     public class UserAppService : IUserAppService {
@@ -19,19 +20,22 @@ namespace Service {
         private readonly IConfigurationProvider _cfg;
         private readonly IMapper _mapper;
         private readonly UserContext _context = null;
-        
+        private readonly ILogger<UserAppService> _logger;
+
         public UserAppService(
             IUserRepository userRepository,
             IMediator mediator,
             UnitOfWork unitOfWork,
             IMapper mapper,
-            UserContext context) {
+            UserContext context,
+            ILogger<UserAppService> logger) {
             _userRepository = userRepository
                 ?? throw new ArgumentNullException("userRepository");
             _mediator = mediator ?? throw new ArgumentNullException("mediator");
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException("unitOfWork");
             _mapper = mapper ?? throw new ArgumentNullException("mapper");
             _context = context ?? throw new ArgumentNullException("context");
+            _logger = logger ?? throw new ArgumentNullException("logger");
         }
 
         public async Task<UserModel> RegisterAsync(UserModel userRegister) {
@@ -120,14 +124,10 @@ namespace Service {
                 _unitOfWork.UserRepository.Update(user);
                 return true;
             } catch (Exception ex) {
+                _logger.LogError("Exception: ", ex);
                 return false;
             }
         }
-        //public async Task<bool> addOrder(OrderInfo orderInfo, AlertInfo alertInfo) {
-
-
-        //}
-
 
         public PaginatedList<UserModel> GetUserPaging(string email,
         string searchString, string nameSort, int pageNumber, int pageSize) {
@@ -180,6 +180,7 @@ namespace Service {
                     = _mapper.Map<PaginatedList<UserModel>>(pagination);
                 return paginated;
             } catch (Exception ex) {
+                _logger.LogError("Exception: ", ex);
                 return null;
             }
         }

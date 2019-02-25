@@ -3,24 +3,28 @@ using System.Threading.Tasks;
 using System;
 using Common.Interface;
 using AutoMapper;
-using System.Collections;
 using System.Threading;
 using Common.Data;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Repository {
-    public class UnitOfWork : ISaveChangesWarper {
+    public class UnitOfWork
+        : ISaveChangesWarper, IUnitOfWork {
 
         private readonly UserContext context;
         private GenericRepository<User> userRepository;
         private GenericRepository<Notes> noteRepository;
         private readonly IMapper mapper;
         private GenericRepository<Alert> alertRepository;
+        private readonly ILogger<UnitOfWork> _logger;
 
         public UnitOfWork(UserContext context,
-            IMapper mapper) {
+            IMapper mapper,
+            ILogger<UnitOfWork> logger) {
             this.context = context;
             this.mapper = mapper;
+            this._logger = logger;
         }
 
         ~UnitOfWork() {
@@ -89,4 +93,5 @@ namespace Repository {
 
         }
     }
+
 }

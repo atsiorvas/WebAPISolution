@@ -6,21 +6,41 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
+using Common.Interface;
 
 namespace Repository {
-    public class GenericRepository<TEntity>
-        where TEntity : Entity, new() {
+    public class GenericRepository<T> : IGenericRepository<T>
+        where T : Entity, new() {
 
-        internal readonly UserContext _context = null;
-        internal readonly DbSet<TEntity> _dbSet = null;
-        internal readonly IMapper _mapper = null;
+        private readonly UserContext _context = null;
+        private readonly DbSet<T> _dbSet = null;
+        private readonly IMapper _mapper = null;
+        private readonly ILogger _logger = null;
 
-        public GenericRepository(UserContext context, IMapper mapper) {
+
+        // parameterless constructor
+        public GenericRepository() { }
+
+        public GenericRepository(
+            UserContext context,
+            IMapper mapper,
+            ILogger<GenericRepository<T>> logger) {
             _context = context ?? throw new ArgumentNullException("context");
-            _dbSet = context.Set<TEntity>() ?? throw new ArgumentNullException("dbSet");
+            _dbSet = context.Set<T>() ?? throw new ArgumentNullException("dbSet");
+            _mapper = mapper ?? throw new ArgumentNullException("mapper");
+            _logger = logger ?? throw new ArgumentNullException("logger");
+        }
+
+        public GenericRepository(
+           UserContext context,
+           IMapper mapper) {
+            _context = context ?? throw new ArgumentNullException("context");
+            _dbSet = context.Set<T>() ?? throw new ArgumentNullException("dbSet");
             _mapper = mapper ?? throw new ArgumentNullException("mapper");
         }
-        public virtual void AddOrUpdate(TEntity entity) {
+
+        public virtual void AddOrUpdate(T entity) {
 
             _context.Entry(entity).State = entity.Id == 0 ?
                                 EntityState.Added :
@@ -28,19 +48,19 @@ namespace Repository {
         }
 
         public virtual async Task<bool> IsExistsAsync(
-            Expression<Func<TEntity, bool>> filter = null) {
-            IQueryable<TEntity> query = _dbSet;
+            Expression<Func<T, bool>> filter = null) {
+            IQueryable<T> query = _dbSet;
             if (filter != null) {
                 return await query.AnyAsync(filter);
             }
             return false;
         }
 
-        public virtual IEnumerable<TEntity> Get(
-           Expression<Func<TEntity, bool>> filter = null,
-           Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+        public virtual IEnumerable<T> Get(
+           Expression<Func<T, bool>> filter = null,
+           Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
            string includeProperties = "") {
-            IQueryable<TEntity> query = _dbSet;
+            IQueryable<T> query = _dbSet;
 
             if (filter != null) {
                 query = query.Where(filter);
@@ -58,14 +78,14 @@ namespace Repository {
             }
         }
 
-        public virtual async Task<TEntity> GetAsync(bool eager = false,
-           Expression<Func<TEntity, bool>> filter = null) {
-            IQueryable<TEntity> query = _dbSet;
+        public virtual async Task<T> GetAsync(bool eager = false,
+           Expression<Func<T, bool>> filter = null) {
+            IQueryable<T> query = _dbSet;
 
             if (filter != null) {
                 if (eager) {
                     foreach (var property in
-                        _context.Model.FindEntityType(typeof(TEntity))
+                        _context.Model.FindEntityType(typeof(T))
                         .GetNavigations()) {
                         query = query.Include(property.Name);
                     }
@@ -75,14 +95,14 @@ namespace Repository {
             return null;
         }
 
-        public virtual IQueryable<TEntity> GetQuery(bool eager = false,
-           Expression<Func<TEntity, bool>> filter = null) {
-            IQueryable<TEntity> query = _dbSet.AsNoTracking();
+        public virtual IQueryable<T> GetQuery(bool eager = false,
+           Expression<Func<T, bool>> filter = null) {
+            IQueryable<T> query = _dbSet.AsNoTracking();
 
             if (filter != null) {
                 if (eager) {
                     foreach (var property in
-                        _context.Model.FindEntityType(typeof(TEntity))
+                        _context.Model.FindEntityType(typeof(T))
                         .GetNavigations()) {
                         query = query.Include(property.Name);
                     }
@@ -92,23 +112,22 @@ namespace Repository {
             return null;
         }
 
-        public virtual TEntity GetByID(object id) {
+        public virtual T GetByID(long id) {
 
             return _dbSet.Find(id);
         }
 
-
-        public virtual void Insert(TEntity entity) {
+        public virtual void Insert(T entity) {
             _dbSet.Add(entity);
         }
 
-        public virtual async Task<bool> Delete(object id) {
-            TEntity entityToDelete = _dbSet.Find(id);
+        public virtual async Task<bool> Delete(long id) {
+            T entityToDelete = _dbSet.Find(id);
             return await DeleteAsync(entityToDelete);
         }
 
         public virtual async Task<bool>
-            DeleteAsync(TEntity entityToDelete) {
+            DeleteAsync(T entityToDelete) {
             try {
                 if (
                     _context.Entry(entityToDelete).State
@@ -120,21 +139,23 @@ namespace Repository {
                 await _context.SaveChangesAsync();
                 return true;
             } catch (Exception ex) {
+                _logger.LogError("Exception: ", ex);
                 return false;
             }
         }
 
-        public virtual bool Update(TEntity entityToUpdate) {
+        public virtual bool Update(T entityToUpdate) {
             try {
                 _dbSet.Attach(entityToUpdate);
                 _context.Entry(entityToUpdate).State = EntityState.Modified;
                 return true;
             } catch (Exception ex) {
+                _logger.LogError("Exception: ", ex);
                 return false;
             }
         }
 
-        public async Task<TEntity> SaveAsync(TEntity model) {
+        public async Task<T> SaveAsync(T model) {
             try {
                 var modelToSave = _dbSet.Add(model).Entity;
                 //update db
@@ -143,16 +164,17 @@ namespace Repository {
                 return modelToSave;
 
             } catch (Exception ex) {
-                throw ex;
+                _logger.LogError("Exception", ex);
+                return null;
             }
         }
 
         public async Task<long> FindIdByBkAsync(
-            Expression<Func<TEntity, bool>> filter = null) {
+            Expression<Func<T, bool>> filter = null) {
 
-            IQueryable<TEntity> query = _dbSet;
+            IQueryable<T> query = _dbSet;
 
-            TEntity entity = await query
+            T entity = await query
                 .Where(filter).FirstOrDefaultAsync();
 
             if (entity != null) {
@@ -161,7 +183,7 @@ namespace Repository {
             return 0;
         }
 
-        public static bool IsItNew(DbContext context,
+        public bool IsItNew(DbContext context,
             object entity)
             => !context.Entry(entity).IsKeySet;
     }

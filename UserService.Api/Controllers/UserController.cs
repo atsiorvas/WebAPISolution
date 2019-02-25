@@ -14,10 +14,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Repository;
 using Service;
-using OptimaJet.DWKit;
 
 namespace UserService.Controllers {
     [Route("api/Users")]
@@ -73,7 +71,6 @@ namespace UserService.Controllers {
                 return Ok(user);
             }
             return BadRequest();
-
         }
 
         // Get Users with pagination
@@ -85,9 +82,10 @@ namespace UserService.Controllers {
             [FromQuery(Name = "orderBy")]string orderBy,
             [FromQuery(Name = "searchString")]string searchString,
             [FromQuery(Name = "email")]string email,
+            [FromHeader(Name = "access")] string access,
             [FromQuery(Name = "pageSize")]int pageSize = 2,
             [FromQuery(Name = "pageNumber")]int pageNumber = 1
-            ) {
+             ) {
 
             /*
              * configure properties
@@ -95,6 +93,7 @@ namespace UserService.Controllers {
             email = !string.IsNullOrEmpty(email) ? email : string.Empty;
             string nameSort = !string.IsNullOrEmpty(orderBy) ? orderBy : "";
             string currentFilter = !string.IsNullOrEmpty(searchString) ? searchString : "";
+            access = !string.IsNullOrEmpty(access) ? access : "";
 
             var paginated = _userService
                 .GetUserPaging(email, searchString, nameSort,
