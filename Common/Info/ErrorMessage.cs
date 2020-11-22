@@ -14,7 +14,5 @@ namespace Common.Info {
         }
 
         public ErrorMessage() { }
-
-
     }
 }

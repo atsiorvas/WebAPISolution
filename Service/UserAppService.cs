@@ -51,6 +51,7 @@ namespace Service {
 
             return user;
         }
+
         public async Task<UserModel> LoginAsync(LoginModel userLogin) {
 
             var email = userLogin.Email;

@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repository;
 using Service;
-using static Mapper.AlertMapper;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 using Module = Autofac.Module;
 

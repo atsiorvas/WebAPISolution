@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Common.Info {
 
@@ -27,5 +28,6 @@ namespace Common.Info {
 
         [JsonProperty("userName")]
         public string UserName { get; set; }
+        
     }
 }

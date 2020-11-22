@@ -15,12 +15,14 @@ namespace Service {
         private const bool Eager = true;
         private readonly IConfigurationProvider _cfg;
         private readonly IMapper _mapper;
+
         public AlertService(
               UnitOfWork unitOfWork,
               IMapper mapper) {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException("unitOfWork");
             _mapper = mapper ?? throw new ArgumentNullException("mapper");
         }
+
         public async Task<AlertInfo> CreateAsync(AlertsParameters alertParameters) {
             if (alertParameters == null) {
                 return null;

@@ -1,6 +1,4 @@
-﻿using Common.Data;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -44,7 +42,7 @@ namespace Common {
         public string ResetAnswer { get; set; }
 
         public virtual HashSet<Notes> Note { get; set; }
-        
+
         public virtual HashSet<Order> Order { get; set; }
 
         public AuditedEntity AuditedEntity { get; set; } = AuditedEntity.Empty;

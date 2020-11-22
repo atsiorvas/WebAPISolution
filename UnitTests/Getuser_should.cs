@@ -1,7 +1,6 @@
 ﻿using Xunit;
 using Moq;
 using Common;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Repository;
 using AutoMapper;
@@ -39,7 +38,6 @@ namespace XUnitTestProject {
         private GenericRepository<User> MockRepo() {
 
             var mockGenericRepository = new Mock<GenericRepository<User>>();
-
 
             mockGenericRepository
                 .Setup(m => m.GetAsync(It.IsAny<bool>(), It.IsAny<Expression<Func<User, bool>>>()))

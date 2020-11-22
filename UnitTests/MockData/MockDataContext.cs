@@ -87,5 +87,15 @@ namespace XUnitTestProject {
                 };
             }
         }
+        public static List<NotesModel> NewNotes {
+            get {
+                return new List<NotesModel>() {
+                            new NotesModel() {
+                                Lang = 2,
+                                Text = "hello world!!"
+                            }
+                };
+            }
+        }
     }
 }

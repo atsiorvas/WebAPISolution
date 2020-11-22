@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common.AbstractValidator;
+using Common.Middleware;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,8 +15,6 @@ using System.Net.Http;
 
 namespace UserService {
     public class Startup {
-
-
 
         private readonly IConfiguration _configuration;
 
@@ -31,7 +30,9 @@ namespace UserService {
             //services.AddScoped<INoteService, NoteService>();
             //services.AddScoped(typeof(UnitOfWork));
             services.AddHttpContextAccessor();
-            services.TryAddSingleton(new HttpClient());
+            //services.TryAddSingleton<HttpContext, HttpContext>();
+            services.TryAddSingleton(new HttpClient());
+
             // Auto Mapper Configurations
             //var mappingConfig = new MapperConfiguration(mc => {
             //    mc.AllowNullDestinationValues = true;
@@ -65,7 +66,6 @@ namespace UserService {
 
             // rest omitted
 
-
             //services.AddDbContext<UserContext>(options =>
             //   options.UseSqlServer(_configuration["ConnectionDB"]));
 
@@ -95,19 +95,29 @@ namespace UserService {
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
             IHostingEnvironment env) {
+
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
+            } else {
+                //app.UseHsts();
             }
-            app.UseCors(x => {
+
+            app.UseCors(x =>
                 x.AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader()
-                .AllowCredentials();
-            });
-            //app.UseAuthentication();
+                .AllowCredentials());
+
+            // This Middleware accept every http request from ip contains into
+            // appsettings.json
+            app.UseMiddleware<AdminSafeListMiddleware>(
+               _configuration["AdminSafeList"]);
+
+            // app.UseHttpsRedirection();
             //app.UseIdentityServer();
 
-            // app.UseMiddleware<EndpointMiddlewareErrorTrapper>();
+            // Middleware to return exception error to response
+            app.UseMiddleware<EndpointMiddlewareErrorTrapper>();
             app.UseMvc();
         }
     }

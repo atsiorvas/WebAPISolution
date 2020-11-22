@@ -9,6 +9,7 @@
     <PackageReference Include="FluentValidation" Version="8.0.101" />
     <PackageReference Include="MediatR" Version="6.0.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="5.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />

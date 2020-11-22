@@ -11,6 +11,7 @@ using Common.Data;
 using Common.Info;
 using Common.Interface;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,8 @@ using Repository;
 using Service;
 
 namespace UserService.Controllers {
+
+    [RequireHttps]
     [Route("api/Users")]
     [ApiController]
     public class UserController : ControllerBase {
@@ -53,26 +56,6 @@ namespace UserService.Controllers {
             _alertService = alertService ?? throw new ArgumentNullException("alertService");
         }
 
-        [HttpPost]
-        [Route("login")]
-        public async Task<ActionResult<UserModel>> LoginAsync(LoginModel login) {
-            var user = await _userService.LoginAsync(login);
-            if (user != null) {
-                return Ok(user);
-            }
-            return BadRequest();
-        }
-
-        // POST api/values
-        [HttpPut("register")]
-        public async Task<ActionResult<UserModel>> Register(UserModel userRegister) {
-            var user = await _userService.RegisterAsync(userRegister);
-            if (user != null) {
-                return Ok(user);
-            }
-            return BadRequest();
-        }
-
         // Get Users with pagination
         /*
          * https://docs.microsoft.com/en-us/aspnet/core/data/ef-rp/sort-filter-page?view=aspnetcore-2.1
@@ -82,7 +65,6 @@ namespace UserService.Controllers {
             [FromQuery(Name = "orderBy")]string orderBy,
             [FromQuery(Name = "searchString")]string searchString,
             [FromQuery(Name = "email")]string email,
-            [FromHeader(Name = "access")] string access,
             [FromQuery(Name = "pageSize")]int pageSize = 2,
             [FromQuery(Name = "pageNumber")]int pageNumber = 1
              ) {
@@ -93,7 +75,7 @@ namespace UserService.Controllers {
             email = !string.IsNullOrEmpty(email) ? email : string.Empty;
             string nameSort = !string.IsNullOrEmpty(orderBy) ? orderBy : "";
             string currentFilter = !string.IsNullOrEmpty(searchString) ? searchString : "";
-            access = !string.IsNullOrEmpty(access) ? access : "";
+            var access = HttpContext.Request.Headers;
 
             var paginated = _userService
                 .GetUserPaging(email, searchString, nameSort,
@@ -124,13 +106,15 @@ namespace UserService.Controllers {
             [FromQuery(Name = "email")]string email,
             [FromBody] List<NotesModel> newNotes) {
 
-            if (string.IsNullOrEmpty(email)) {
+            if (string.IsNullOrEmpty(email))
                 return null;
-            }
+
             try {
-                List<NotesModel> getNewNotes = await _noteService.SaveNotesByAsync(email, newNotes);
+                var getNewNotes =
+                     await _noteService.SaveNotesByAsync(email, newNotes);
                 return getNewNotes;
-            } catch (Exception) {
+            } catch (Exception ex) {
+                _logger.LogError("Exception: ", ex);
                 return null;
             }
         }
@@ -138,11 +122,11 @@ namespace UserService.Controllers {
         [Route("getNotesAsync")]
         [HttpGet]
         public async Task<List<NotesModel>> GetNotesAsync(string email) {
-            try {
 
-                if (string.IsNullOrEmpty(email)) {
-                    return null;
-                }
+            if (string.IsNullOrEmpty(email))
+                return null;
+
+            try {
                 DbSet<User> users = _context.User;
                 DbSet<Notes> notes = _context.Notes;
 
@@ -238,12 +222,13 @@ namespace UserService.Controllers {
 
             //var user = await _mediator.Send(requestCreateGetUserCommand);
             var user = await _context.User.Where(u => u.Email == email)
-                .Include(u => u.Note).FirstOrDefaultAsync();
+                .FirstOrDefaultAsync();
 
             if (user == null) {
                 return NotFound();
             }
-            return Ok(user);
+            var userModel = _mapper.Map<UserModel>(user);
+            return Ok(userModel);
         }
 
         [Route("deleteUser")]
